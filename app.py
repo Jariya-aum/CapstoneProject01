@@ -20,7 +20,12 @@ import ee_pipeline as pipe
 # ---------------------------------------------------------------------------
 # ตั้งค่าหน้าเว็บ
 # ---------------------------------------------------------------------------
-st.set_page_config(page_title="Corn Classification (GEE)", layout="wide")
+st.set_page_config(
+    page_title="Corn Map — ข้าวโพด",   # ชื่อที่ขึ้นบนแท็บ + ตอน Add to Home Screen
+    page_icon="🌽",                     # ไอคอนแอปบนมือถือ/แท็บเบราว์เซอร์
+    layout="wide",
+    initial_sidebar_state="auto",       # มือถือจะย่อ sidebar อัตโนมัติ ให้แผนที่เต็มจอ
+)
 
 
 # ---------------------------------------------------------------------------
@@ -147,32 +152,28 @@ if result:
     ).add_to(fmap)
     folium.LayerControl(collapsed=False).add_to(fmap)
 
-col_map, col_stats = st.columns([3, 1])
-with col_map:
-    st_folium(fmap, width=None, height=560, returned_objects=[])
+# ---- สรุปพื้นที่ข้าวโพดเป็นแถว metric (Streamlit จะเรียงลงล่างเองบนจอมือถือ) ----
+if result:
+    areas = result["areas"]              # {cluster_id(str): area_sqm}
+    total = sum(areas.values()) or 1
+    corn_sqm = areas.get(str(corn_cluster_id), 0.0)
 
-with col_stats:
-    if result:
-        areas = result["areas"]  # {cluster_id(str): area_sqm}
-        total = sum(areas.values()) or 1
+    st.subheader(f"🌽 พื้นที่ข้าวโพด — Cluster {corn_cluster_id}")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("ไร่", f"{corn_sqm / 1600:,.0f}")          # 1 ไร่ = 1,600 ตร.ม.
+    m2.metric("เฮกตาร์", f"{corn_sqm / 10000:,.0f}")
+    m3.metric("% ของ AOI", f"{corn_sqm / total * 100:.1f}%")
 
-        # ---- พื้นที่ข้าวโพดที่เลือก ----
-        st.subheader("🌽 พื้นที่ข้าวโพด")
-        corn_sqm = areas.get(str(corn_cluster_id), 0.0)
-        st.metric("ไร่", f"{corn_sqm / 1600:,.0f}")   # 1 ไร่ = 1,600 ตร.ม.
-        st.caption(
-            f"{corn_sqm / 10000:,.1f} เฮกตาร์  ·  "
-            f"{corn_sqm / 1_000_000:,.2f} ตร.กม.  ·  "
-            f"{corn_sqm / total * 100:.1f}% ของ AOI"
-        )
-        st.divider()
+# ---- แผนที่เต็มความกว้าง (responsive ทั้งจอใหญ่/มือถือ) ----
+st_folium(fmap, use_container_width=True, height=520, returned_objects=[])
 
-        # ---- สัดส่วนแต่ละ cluster (ช่วยเลือกว่าอันไหนคือข้าวโพด) ----
-        st.subheader("📊 ทุก Cluster")
+# ---- สัดส่วนทุก cluster (ซ่อนใน expander ประหยัดพื้นที่บนมือถือ) ----
+if result:
+    with st.expander("📊 สัดส่วนทุก Cluster — ใช้ดูว่า cluster ไหนคือข้าวโพด", expanded=False):
         for cid in sorted(areas, key=int):
             pct = areas[cid] / total * 100
             label = f"Cluster {cid}" + ("  🌽" if int(cid) == corn_cluster_id else "")
             st.write(f"**{label}** — {pct:.1f}%  ({areas[cid] / 1600:,.0f} ไร่)")
             st.progress(min(pct / 100, 1.0))
-    else:
-        st.info("กด ▶️ ประมวลผล เพื่อเริ่ม")
+else:
+    st.info("👈 เปิดแถบตั้งค่า (มุมซ้ายบน) แล้วกด ▶️ ประมวลผล เพื่อเริ่ม")
