@@ -1,0 +1,30 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# --- Virtual env (ห้ามขึ้น) ---
+env/
+venv/
+.venv/
+
+# --- ML artifacts / outputs (ใหญ่/สร้างใหม่ได้) ---
+mlruns/
+models/
+*.png
+
+# --- Node (ไม่เกี่ยวกับ web app นี้) ---
+node_modules/
+
+# --- ความลับ: EE service account / Streamlit secrets (ห้ามขึ้นเด็ดขาด) ---
+.streamlit/secrets.toml
+*.json
+!architecture.drawio
+service_account*.json
+*-key.json
+
+# --- ระบบ/เครื่องมือ ---
+desktop.ini
+.DS_Store
+.ipynb_checkpoints/

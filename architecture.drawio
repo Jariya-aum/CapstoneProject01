@@ -1,0 +1,65 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="corn-webapp" name="Corn WebApp Architecture">
+    <mxGraphModel dx="1050" dy="720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="750" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t_user" value="👤 User (Browser)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="box_st" value="Streamlit Web App (app.py)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="40" width="440" height="290" as="geometry" />
+        </mxCell>
+        <mxCell id="t_sidebar" value="Sidebar&#10;• AOI bounds&#10;• ช่วงวันที่&#10;• จำนวน Cluster / Samples&#10;• ปุ่ม ▶️ ประมวลผล" style="rounded=1;whiteSpace=wrap;html=1;align=left;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="320" y="80" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="t_main" value="Main Area&#10;• Folium Map (st_folium)&#10;• Spinner / Progress&#10;• สถิติ Cluster (st.metric)" style="rounded=1;whiteSpace=wrap;html=1;align=left;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="520" y="80" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="t_cache" value="Caching&#10;@st.cache_resource → EE init&#10;@st.cache_data → tile URL + สถิติ (คีย์ = พารามิเตอร์)" style="rounded=1;whiteSpace=wrap;html=1;align=left;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="320" y="220" width="400" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="box_pipe" value="Integration Layer (ee_pipeline.py)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="380" width="440" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="t_aoi" value="build_aoi()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="320" y="420" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t_comp" value="build_composite()&#10;(S1/S2 + reproject)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="420" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t_clus" value="run_clustering()&#10;wekaKMeans(n)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="320" y="480" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t_tile" value="get_tile_url()&#10;ee.Image → XYZ URL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="490" y="480" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="t_note" value="⬅ วางโค้ด EE เดิมจาก ml_corn.py ตรงนี้" style="text;html=1;align=left;fontStyle=2;fontColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="320" y="540" width="400" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="box_gee" value="☁️ Google Earth Engine&#10;Sentinel-1 (S1_GRD)&#10;Sentinel-2 (S2_SR_HARMONIZED)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="860" y="420" width="200" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="endArrow=classic;html=1;startArrow=classic;" edge="1" parent="1" source="t_user" target="box_st">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="เรียก pipeline (ในบล็อก cache_data)" style="endArrow=classic;html=1;" edge="1" parent="1" source="t_cache" target="box_pipe">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="ee API (getMapId / getInfo)" style="endArrow=classic;html=1;startArrow=classic;" edge="1" parent="1" source="box_pipe" target="box_gee">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="XYZ tiles (โหลดตรงเข้าเบราว์เซอร์)" style="endArrow=classic;html=1;dashed=1;" edge="1" parent="1" source="box_gee" target="t_user">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="960" y="200" /></Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
