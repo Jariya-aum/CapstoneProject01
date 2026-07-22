@@ -20,11 +20,29 @@ import ee
 # ---------------------------------------------------------------------------
 def initialize_ee(project: str = "ee-aum121236"):
     """
-    เริ่มต้น Earth Engine
+    เริ่มต้น Earth Engine — รองรับ 2 โหมดอัตโนมัติ
 
-    บนเครื่อง local:      ee.Authenticate() ครั้งแรกก่อน แล้ว ee.Initialize()
-    บน Streamlit Cloud:   ใช้ Service Account (ดูหมายเหตุท้ายไฟล์)
+    1) บน Streamlit Cloud: ใช้ Service Account key ที่เก็บใน st.secrets
+       (คีย์ชื่อ EE_SERVICE_ACCOUNT เป็น JSON ทั้งก้อน)
+    2) บนเครื่อง local:     ใช้ ee.Initialize() / ee.Authenticate() ตามปกติ
     """
+    # --- โหมดคลาวด์: Service Account จาก Streamlit Secrets ---
+    try:
+        import json
+        import streamlit as st
+
+        if "EE_SERVICE_ACCOUNT" in st.secrets:
+            key_dict = json.loads(st.secrets["EE_SERVICE_ACCOUNT"])
+            credentials = ee.ServiceAccountCredentials(
+                key_dict["client_email"], key_data=json.dumps(key_dict)
+            )
+            ee.Initialize(credentials, project=key_dict.get("project_id", project))
+            return
+    except Exception:
+        # ไม่มี streamlit / ไม่มี secret -> ตกไปใช้โหมด local ด้านล่าง
+        pass
+
+    # --- โหมด local ---
     try:
         ee.Initialize(project=project)
     except Exception:
@@ -204,12 +222,16 @@ def corn_mask_tile(cluster_image: "ee.Image", corn_cluster_id: int) -> str:
 
 
 # ---------------------------------------------------------------------------
-# หมายเหตุ: การ deploy บน Streamlit Cloud ด้วย Service Account
+# หมายเหตุการ deploy บน Streamlit Cloud
 # ---------------------------------------------------------------------------
-# import json
-# from google.oauth2 import service_account
-# key_dict = json.loads(st.secrets["EE_SERVICE_ACCOUNT"])
-# creds = service_account.Credentials.from_service_account_info(
-#     key_dict, scopes=["https://www.googleapis.com/auth/earthengine"]
-# )
-# ee.Initialize(creds, project=key_dict["project_id"])
+# initialize_ee() ด้านบนจัดการ Service Account ให้แล้ว
+# สิ่งที่ต้องทำมีแค่: เอา JSON key ทั้งก้อนไปวางใน Streamlit Secrets แบบนี้
+#
+#   EE_SERVICE_ACCOUNT = '''
+#   {
+#     "type": "service_account",
+#     "project_id": "ee-aum121236",
+#     "client_email": "xxx@ee-aum121236.iam.gserviceaccount.com",
+#     ... (เนื้อไฟล์ key ทั้งหมด) ...
+#   }
+#   '''
